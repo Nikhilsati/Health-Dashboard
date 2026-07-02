@@ -1,0 +1,753 @@
+# Personal Health Dashboard
+
+## Vision
+
+Build a modern web application that transforms raw pathology reports into a living health record. Instead of browsing dozens of PDFs, users should have a beautiful dashboard that shows their current health, trends over time, abnormal values, and improvements.
+
+The application should work entirely from the canonical parsed JSON, making it independent of the laboratory (Orange Health, Tata 1mg, etc.).
+
+---
+
+# Design Principles
+
+- Minimal
+- Medical-grade clarity
+- Beautiful typography
+- Fast
+- Zero clutter
+- Desktop-first
+- Mobile responsive
+- Dark & Light theme
+- Print-friendly
+
+Inspired by
+
+- Apple Health
+- Linear
+- Vercel Dashboard
+- Notion
+- Stripe Dashboard
+
+---
+
+# Landing Dashboard
+
+The landing page should immediately answer:
+
+> "How healthy am I today?"
+
+Layout
+
+```
+----------------------------------------------------
+Profile
+
+Nikhil Sati
+Age 27
+4 Reports
+Latest: 30 Jun 2026
+
+----------------------------------------------------
+
+Health Score
+
+        82 / 100
+
+Excellent
+↑ +8 from last year
+
+----------------------------------------------------
+
+Summary Cards
+
+❤️ Heart
+🩸 Blood
+🧠 Hormones
+🦴 Vitamins
+🫀 Liver
+💧 Kidney
+
+----------------------------------------------------
+
+Recent Changes
+
+Vitamin D ↑ Improved
+
+LDL ↓ Improved
+
+Triglycerides ↑ Increased
+
+Homocysteine ↓ Better
+
+----------------------------------------------------
+
+Timeline
+
+2024
+2025
+2025
+2026
+```
+
+---
+
+# Health Score
+
+Generate an overall health score.
+
+Example
+
+```
+82 / 100
+```
+
+Breakdown
+
+```
+Heart
+
+18 / 25
+
+Blood
+
+15 / 15
+
+Liver
+
+10 / 10
+
+Kidney
+
+10 / 10
+
+Metabolism
+
+14 / 15
+
+Nutrition
+
+8 / 15
+
+Inflammation
+
+7 / 10
+```
+
+Clicking a score opens detailed reasoning.
+
+---
+
+# Timeline
+
+Horizontal timeline
+
+```
+2024
+
+↓
+
+2025 May
+
+↓
+
+2025 Jul
+
+↓
+
+2026 Jun
+```
+
+Clicking any report updates the dashboard.
+
+---
+
+# Health Summary
+
+Large cards.
+
+Example
+
+```
+Heart Health
+
+Moderate Risk
+
+LDL High
+
+HDL Low
+
+Triglycerides Elevated
+
+hsCRP Average
+
+Lp(a) High
+```
+
+---
+
+```
+Liver
+
+Healthy
+
+ALT Slightly High
+
+Everything else Normal
+```
+
+---
+
+```
+Kidney
+
+Excellent
+
+Creatinine Normal
+
+Electrolytes Normal
+
+eGFR Excellent
+```
+
+---
+
+# Trends Page
+
+Shows every measurable parameter over time.
+
+Example
+
+```
+Vitamin D
+
+2024
+
+7.2
+
+↓
+
+2025
+
+25
+
+↓
+
+2026
+
+33
+
+```
+
+Beautiful line chart.
+
+Green indicates improvement.
+
+---
+
+Another example
+
+```
+LDL
+
+148
+
+↓
+
+141
+
+↓
+
+134
+
+```
+
+---
+
+Each chart displays
+
+Current
+
+Previous
+
+Average
+
+Target
+
+Normal Range
+
+---
+
+# Categories
+
+Sidebar
+
+```
+Overview
+
+Heart
+
+Blood
+
+Liver
+
+Kidney
+
+Diabetes
+
+Thyroid
+
+Vitamins
+
+Inflammation
+
+Hormones
+
+Urine
+
+Reports
+
+Insights
+
+Settings
+```
+
+---
+
+# Category Page
+
+Example
+
+```
+Blood
+
+CBC
+
+--------------------------------
+
+Hemoglobin
+
+13.9
+
+Normal
+
+Trend
+
+────────────
+
+RBC
+
+5.25
+
+Normal
+
+Trend
+
+────────────
+
+MCV
+
+78
+
+Low
+
+Trend
+
+────────────
+
+MCH
+
+26
+
+Low
+
+Trend
+```
+
+---
+
+# Test Detail
+
+Clicking a parameter opens
+
+```
+Hemoglobin
+
+Current
+
+13.9 g/dL
+
+Normal
+
+Reference
+
+13–17
+
+History
+
+2024
+
+15
+
+2025
+
+14.6
+
+2025
+
+13.9
+
+2026
+
+14.2
+
+Trend Chart
+
+Insights
+
+Completely stable.
+
+No concern.
+```
+
+---
+
+# Insights Engine
+
+Automatically generate observations.
+
+Example
+
+```
+Vitamin D increased
+
++247%
+
+Excellent improvement.
+```
+
+---
+
+```
+LDL decreased
+
+148 → 134
+
+Still above optimal.
+```
+
+---
+
+```
+Triglycerides increased
+
+134 → 182
+
+Needs monitoring.
+```
+
+---
+
+```
+Homocysteine
+
+43
+
+↓
+
+36
+
+Still significantly elevated.
+```
+
+---
+
+Group insights
+
+```
+Improved
+
+Stable
+
+Needs Attention
+```
+
+---
+
+# Reports Page
+
+Displays all imported reports.
+
+```
+Orange Health
+
+Jun 2026
+
+✓ Parsed
+
+-----------------
+
+Tata 1mg
+
+Jul 2025
+
+✓ Parsed
+
+-----------------
+
+Orange Health
+
+May 2025
+
+✓ Parsed
+
+-----------------
+
+Tata 1mg
+
+Jun 2024
+
+✓ Parsed
+```
+
+Clicking opens original PDF alongside parsed data.
+
+---
+
+# Compare Reports
+
+Choose two reports.
+
+```
+2024
+
+vs
+
+2026
+```
+
+Generate
+
+```
++ Vitamin D
+
++18
+
+Improved
+
+-----------------
+
+LDL
+
+−14
+
+Improved
+
+-----------------
+
+Homocysteine
+
+−7
+
+Improved
+
+-----------------
+
+Triglycerides
+
++48
+
+Worse
+```
+
+---
+
+# Search
+
+Global search.
+
+```
+Search...
+
+Vitamin D
+
+LDL
+
+Hemoglobin
+
+Ferritin
+
+Creatinine
+```
+
+Returns matching parameters across all reports.
+
+---
+
+# Notifications
+
+Automatically detect
+
+```
+New abnormality
+
+Improvement
+
+Missing tests
+
+Large changes
+```
+
+---
+
+# PDF Viewer
+
+Split screen.
+
+```
+------------------------------
+
+Original PDF
+
+|
+
+Parsed Data
+
+------------------------------
+```
+
+Clicking a value highlights the source location inside the PDF.
+
+---
+
+# Future Upload
+
+Upload page
+
+```
+Drop PDF
+
+↓
+
+Detect Lab
+
+↓
+
+Parse
+
+↓
+
+Review
+
+↓
+
+Import
+
+↓
+
+Dashboard Updated
+```
+
+---
+
+# Tech Stack
+
+Framework
+
+- React
+- TypeScript
+- Next.js
+
+Styling
+
+- TailwindCSS
+- shadcn/ui
+
+Charts
+
+- Recharts
+
+Icons
+
+- Lucide
+
+Animations
+
+- Framer Motion
+
+State
+
+- Zustand
+
+Storage
+
+- IndexedDB (Dexie)
+
+Future Sync
+
+- Supabase
+
+---
+
+# Folder Structure
+
+```
+src/
+
+app/
+
+components/
+
+    dashboard/
+
+    charts/
+
+    cards/
+
+    timeline/
+
+    reports/
+
+    insights/
+
+parser/
+
+    orange/
+
+    onemg/
+
+    canonical/
+
+lib/
+
+types/
+
+hooks/
+
+store/
+
+data/
+
+```
+
+---
+
+# Future Features
+
+- AI-generated doctor summary
+- Medication tracking
+- Blood pressure logging
+- Weight tracking
+- Sleep integration
+- Apple Health integration
+- Google Fit integration
+- Wearable support
+- Nutrition tracking
+- Exercise tracking
+- Family history
+- Genetic risk scoring
+- Goal setting
+- Appointment reminders
+- Export to PDF
+- Shareable doctor report
+- Predictive trend analysis
+- Health score forecasting

@@ -1,36 +1,47 @@
-# [Project name]
+# Personal Health Dashboard
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A modern web application that transforms raw pathology reports into a living health record — beautiful dashboard, trends, insights, and comparisons across time.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/health-dashboard run dev` — run the health dashboard (port assigned by workflow)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Frontend: React + Vite, Tailwind CSS, shadcn/ui
+- Charts: Recharts
+- Animations: Framer Motion
+- Routing: Wouter
+- Themes: next-themes (dark/light)
+- Data: Static TypeScript data file (no backend)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/health-dashboard/src/` — all frontend source
+- `artifacts/health-dashboard/src/data/healthData.ts` — all biomarker data (source of truth)
+- `artifacts/health-dashboard/src/data/healthUtils.ts` — helper functions (status, trends, scores)
+- `artifacts/health-dashboard/src/index.css` — theme tokens & CSS variables
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Frontend-only: all data is static TypeScript (no backend, no database). Future sync can be added via Supabase.
+- Data model: canonical biomarker format independent of lab (Orange Health, Tata 1mg, etc.)
+- Health score computed client-side from biomarker reference ranges
+- Dark/light theme via next-themes with CSS custom properties
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Personal health dashboard for Nikhil Sati showing 4 pathology reports (2024–2026):
+- Dashboard with health score, category summary cards, recent changes, timeline
+- Trends page with animated line charts for every biomarker
+- Category pages: Heart, Blood, Liver, Kidney, Vitamins, Thyroid, Diabetes, Inflammation, Hormones
+- Reports list and detail view
+- Insights engine: Improved / Stable / Needs Attention
+- Compare two reports side-by-side
+- Global search across all parameters
 
 ## User preferences
 
@@ -38,7 +49,8 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Always use `import.meta.env.BASE_URL` for route prefix (wouter base is set in App.tsx)
+- Dark/light theme toggle is required — use next-themes ThemeProvider
 
 ## Pointers
 
