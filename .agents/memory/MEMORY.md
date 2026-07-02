@@ -1,0 +1,1 @@
+- [Recharts area chart X-axis](recharts-area-date-key.md) — date strings as XAxis dataKey cause area to draw only at first position; use numeric indices with tickFormatter instead.
