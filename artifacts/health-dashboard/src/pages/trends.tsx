@@ -239,7 +239,7 @@ function BiomarkerChart({ biomarker, index }: { biomarker: Biomarker; index: num
   const dates = reports.map(r => r.date);
   const data = biomarker.history.map((value, i) => ({ x: i, value }));
 
-  // Compute Y domain with padding (include reference lines in domain)
+  // Compute Y domain so reference lines always have visible breathing room
   const allVals = [
     ...biomarker.history,
     ...(refMin !== undefined ? [refMin] : []),
@@ -248,8 +248,16 @@ function BiomarkerChart({ biomarker, index }: { biomarker: Biomarker; index: num
   const rawMin = Math.min(...allVals);
   const rawMax = Math.max(...allVals);
   const pad = (rawMax - rawMin) * 0.18 || rawMax * 0.15 || 1;
-  const domainMin = Math.max(0, rawMin - pad);
-  const domainMax = rawMax + pad;
+
+  let domainMin = Math.max(0, rawMin - pad);
+  let domainMax = rawMax + pad;
+
+  // Guarantee the healthy side of every reference line occupies ≥20% of the chart
+  const firstSpan = domainMax - domainMin;
+  if (refMax !== undefined) domainMin = Math.min(domainMin, refMax - firstSpan * 0.22);
+  if (refMin !== undefined) domainMax = Math.max(domainMax, refMin + firstSpan * 0.22);
+  // Re-clamp to zero if all real data is non-negative
+  if (domainMin < 0 && Math.min(...biomarker.history) >= 0) domainMin = 0;
 
   const gradient = buildZoneGradient(gradId, domainMin, domainMax, refMin, refMax);
 
@@ -355,7 +363,10 @@ function BiomarkerChart({ biomarker, index }: { biomarker: Biomarker; index: num
                 tick={{ fontSize: 9, fill: "var(--color-muted-foreground)" }}
                 domain={[domainMin, domainMax]}
                 tickCount={4}
-                width={36}
+                width={38}
+                tickFormatter={(v: number) =>
+                  v >= 100 ? Math.round(v).toString() : v >= 10 ? v.toFixed(1) : v.toFixed(2)
+                }
               />
               <Tooltip content={<ChartTooltip dates={dates} unit={biomarker.unit} />} />
 
