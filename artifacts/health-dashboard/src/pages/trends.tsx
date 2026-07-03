@@ -38,62 +38,32 @@ const ZONE = {
   low:    { stroke: "#f59e0b", fill: "#f59e0b", bg: "#f59e0b14", badge: "bg-amber-500/15 text-amber-400", label: "Below Range" },
 };
 
-/* ─── gradient stops builder ─────────────────────────────────────────── */
-interface GradientStops {
-  id: string;
-  stops: Array<{ offset: string; color: string; opacity: number }>;
-}
-
-function buildZoneGradient(
-  id: string,
-  domainMin: number,
-  domainMax: number,
+/* ─── zone fill data builders ────────────────────────────────────────── */
+// Each Area fills from its dataKey DOWN to its baseValue.
+// We clamp values so each Area only "paints" its own zone.
+function buildZoneData(
+  history: number[],
   refMin: number | undefined,
   refMax: number | undefined,
-): GradientStops {
-  const span = domainMax - domainMin;
-  const frac = (v: number) => `${((1 - (v - domainMin) / span) * 100).toFixed(2)}%`;
-
-  const stops: GradientStops["stops"] = [];
-
-  if (refMax !== undefined && refMin !== undefined) {
-    // Three zones: red (above max) | green (between) | amber (below min)
-    const maxF = frac(refMax);
-    const minF = frac(refMin);
-    stops.push(
-      { offset: "0%",  color: ZONE.high.fill,   opacity: 0.55 },
-      { offset: maxF,  color: ZONE.high.fill,   opacity: 0.55 },
-      { offset: maxF,  color: ZONE.normal.fill, opacity: 0.45 },
-      { offset: minF,  color: ZONE.normal.fill, opacity: 0.45 },
-      { offset: minF,  color: ZONE.low.fill,    opacity: 0.55 },
-      { offset: "100%", color: ZONE.low.fill,   opacity: 0.55 },
-    );
-  } else if (refMax !== undefined) {
-    // Two zones: red (above max) | green (below max)
-    const maxF = frac(refMax);
-    stops.push(
-      { offset: "0%",   color: ZONE.high.fill,   opacity: 0.55 },
-      { offset: maxF,   color: ZONE.high.fill,   opacity: 0.55 },
-      { offset: maxF,   color: ZONE.normal.fill, opacity: 0.45 },
-      { offset: "100%", color: ZONE.normal.fill, opacity: 0.45 },
-    );
-  } else if (refMin !== undefined) {
-    // Two zones: green (above min) | amber (below min)
-    const minF = frac(refMin);
-    stops.push(
-      { offset: "0%",   color: ZONE.normal.fill, opacity: 0.45 },
-      { offset: minF,   color: ZONE.normal.fill, opacity: 0.45 },
-      { offset: minF,   color: ZONE.low.fill,    opacity: 0.55 },
-      { offset: "100%", color: ZONE.low.fill,    opacity: 0.55 },
-    );
-  } else {
-    stops.push(
-      { offset: "0%",   color: ZONE.normal.fill, opacity: 0.45 },
-      { offset: "100%", color: ZONE.normal.fill, opacity: 0.02 },
-    );
-  }
-
-  return { id, stops };
+  domainMin: number,
+) {
+  return history.map((value, i) => {
+    // high: fills from max(value, refMax) → refMax  (only visible when value > refMax)
+    const high = refMax !== undefined ? Math.max(value, refMax) : undefined;
+    // normal: fills from clamped value → refMin (or domainMin if no refMin)
+    const normalTop =
+      refMax !== undefined && refMin !== undefined
+        ? Math.min(Math.max(value, refMin), refMax)
+        : refMax !== undefined
+        ? Math.min(value, refMax)
+        : refMin !== undefined
+        ? Math.max(value, refMin)
+        : value;
+    const normal = normalTop;
+    // low: fills from min(value, refMin) → domainMin  (only visible when value < refMin)
+    const low = refMin !== undefined ? Math.min(value, refMin) : undefined;
+    return { x: i, value, high, normal, low };
+  });
 }
 
 /* ─── tooltip ────────────────────────────────────────────────────────── */
@@ -235,9 +205,7 @@ function BiomarkerChart({ biomarker, index }: { biomarker: Biomarker; index: num
   const latest = biomarker.history[biomarker.history.length - 1];
   const latestStatus = getRangeStatus(latest, biomarker.referenceRange);
   const { min: refMin, max: refMax } = parseRef(biomarker.referenceRange);
-  const gradId = `zone-grad-${biomarker.id}`;
   const dates = reports.map(r => r.date);
-  const data = biomarker.history.map((value, i) => ({ x: i, value }));
 
   // Compute Y domain so reference lines always have visible breathing room
   const allVals = [
@@ -259,7 +227,7 @@ function BiomarkerChart({ biomarker, index }: { biomarker: Biomarker; index: num
   // Re-clamp to zero if all real data is non-negative
   if (domainMin < 0 && Math.min(...biomarker.history) >= 0) domainMin = 0;
 
-  const gradient = buildZoneGradient(gradId, domainMin, domainMax, refMin, refMax);
+  const data = buildZoneData(biomarker.history, refMin, refMax, domainMin);
 
   return (
     <motion.div
@@ -287,59 +255,22 @@ function BiomarkerChart({ biomarker, index }: { biomarker: Biomarker; index: num
         <div className="h-[180px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-              <defs>
-                <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-                  {gradient.stops.map((s, i) => (
-                    <stop key={i} offset={s.offset} stopColor={s.color} stopOpacity={s.opacity} />
-                  ))}
-                </linearGradient>
-              </defs>
 
               {/* Background zone shading */}
               {refMax !== undefined && (
-                <ReferenceArea
-                  y1={refMax}
-                  y2={domainMax}
-                  fill={ZONE.high.bg}
-                  fillOpacity={1}
-                  stroke="none"
-                />
+                <ReferenceArea y1={refMax} y2={domainMax} fill={ZONE.high.bg} fillOpacity={1} stroke="none" />
               )}
-              {refMin !== undefined && refMax !== undefined && (
+              {(refMin !== undefined || refMax !== undefined) && (
                 <ReferenceArea
-                  y1={refMin}
-                  y2={refMax}
-                  fill={ZONE.normal.bg}
-                  fillOpacity={1}
-                  stroke="none"
-                />
-              )}
-              {refMin !== undefined && refMax === undefined && (
-                <ReferenceArea
-                  y1={refMin}
-                  y2={domainMax}
+                  y1={refMin ?? domainMin}
+                  y2={refMax ?? domainMax}
                   fill={ZONE.normal.bg}
                   fillOpacity={1}
                   stroke="none"
                 />
               )}
               {refMin !== undefined && (
-                <ReferenceArea
-                  y1={domainMin}
-                  y2={refMin}
-                  fill={ZONE.low.bg}
-                  fillOpacity={1}
-                  stroke="none"
-                />
-              )}
-              {refMin === undefined && refMax !== undefined && (
-                <ReferenceArea
-                  y1={domainMin}
-                  y2={refMax}
-                  fill={ZONE.normal.bg}
-                  fillOpacity={1}
-                  stroke="none"
-                />
+                <ReferenceArea y1={domainMin} y2={refMin} fill={ZONE.low.bg} fillOpacity={1} stroke="none" />
               )}
 
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" strokeOpacity={0.07} />
@@ -392,12 +323,55 @@ function BiomarkerChart({ biomarker, index }: { biomarker: Biomarker; index: num
                 />
               )}
 
+              {/* Zone fill areas — each clamped to its zone, no gradient needed */}
+              {refMax !== undefined && (
+                <Area
+                  type="monotone"
+                  dataKey="high"
+                  baseValue={refMax}
+                  stroke="none"
+                  fill={ZONE.high.fill}
+                  fillOpacity={0.4}
+                  isAnimationActive={false}
+                  dot={false}
+                  activeDot={false}
+                  legendType="none"
+                />
+              )}
+              <Area
+                type="monotone"
+                dataKey="normal"
+                baseValue={refMin ?? domainMin}
+                stroke="none"
+                fill={ZONE.normal.fill}
+                fillOpacity={0.35}
+                isAnimationActive={false}
+                dot={false}
+                activeDot={false}
+                legendType="none"
+              />
+              {refMin !== undefined && (
+                <Area
+                  type="monotone"
+                  dataKey="low"
+                  baseValue={domainMin}
+                  stroke="none"
+                  fill={ZONE.low.fill}
+                  fillOpacity={0.45}
+                  isAnimationActive={false}
+                  dot={false}
+                  activeDot={false}
+                  legendType="none"
+                />
+              )}
+
+              {/* Stroke line on top */}
               <Area
                 type="monotone"
                 dataKey="value"
                 stroke={ZONE[latestStatus].stroke}
                 strokeWidth={2.5}
-                fill={`url(#${gradId})`}
+                fill="none"
                 isAnimationActive={false}
                 dot={{ r: 4, fill: ZONE[latestStatus].stroke, stroke: "var(--color-card)", strokeWidth: 2 }}
                 activeDot={{ r: 6, fill: ZONE[latestStatus].stroke, stroke: "var(--color-card)", strokeWidth: 2 }}
