@@ -14,6 +14,7 @@ import Reports from "@/pages/reports";
 import Insights from "@/pages/insights";
 import Compare from "@/pages/compare";
 import Search from "@/pages/search";
+import BodyPage from "@/pages/body";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ function Router() {
         <Route path="/insights" component={Insights} />
         <Route path="/compare" component={Compare} />
         <Route path="/search" component={Search} />
+        <Route path="/body" component={BodyPage} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

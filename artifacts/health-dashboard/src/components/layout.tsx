@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { ThemeToggle } from "./theme-toggle";
-import { Activity, Droplet, Heart, ShieldPlus, ActivitySquare, Pill, Flame, Fingerprint, History, Sparkles, Scale, Search, Menu, X, User, Pencil, Check } from "lucide-react";
+import { Activity, Droplet, Heart, ShieldPlus, ActivitySquare, Pill, Flame, Fingerprint, History, Sparkles, Scale, Search, Menu, X, User, Pencil, Check, ScanLine } from "lucide-react";
 import { useState, useEffect } from "react";
 import { categories, profile as defaultProfile } from "@/data/healthData";
 
@@ -87,6 +87,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="space-y-1 mt-14 md:mt-0">
             <NavItem href="/" icon={Activity} label="Overview" active={location === "/"} />
             <NavItem href="/trends" icon={ActivitySquare} label="Trends" active={location === "/trends"} />
+            <NavItem href="/body" icon={ScanLine} label="Body Viewer" active={location === "/body"} />
             <NavItem href="/reports" icon={History} label="Reports" active={location === "/reports"} />
             <NavItem href="/search" icon={Search} label="Search" active={location === "/search"} />
           </div>
@@ -130,9 +131,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col relative overflow-y-auto pt-14 md:pt-0">
-        <div className="max-w-6xl mx-auto w-full p-4 md:p-8">
-          {children}
-        </div>
+        {location === "/body" ? (
+          <div className="flex-1 h-full overflow-hidden" style={{ height: "calc(100vh - 0px)" }}>
+            {children}
+          </div>
+        ) : (
+          <div className="max-w-6xl mx-auto w-full p-4 md:p-8">
+            {children}
+          </div>
+        )}
       </main>
 
       {/* Mobile overlay */}

@@ -1,0 +1,55 @@
+#1 - Interactive 3D Body Viewer
+What & Why
+Add a /body page with a real 3D interactive human body built using React Three Fiber (Three.js). The body rotates in 3D space — users can orbit/spin it with the mouse — and clickable 3D organ meshes glow with their health status color. Clicking an organ opens a readings panel. Far more immersive and technical than a flat SVG.
+
+Done looks like
+New "Body" entry in the sidebar navigation
+Split layout: 3D canvas on the left (~55%), readings panel on the right (~45%)
+The 3D body is a stylized anatomical figure built from Three.js geometry:
+Outer body: a semi-transparent, slightly emissive ice-blue mesh (torso, head, limbs via CapsuleGeometry/CylinderGeometry) — medical hologram aesthetic
+Inner organ meshes positioned correctly inside the body in 3D space:
+Heart — center-left chest (pulsing red/crimson)
+Liver — upper-right abdomen (warm amber)
+Kidneys — two bean-shaped meshes, flanking the spine mid-back
+Thyroid — base of neck (teal/green)
+Pancreas — center abdomen (orange, Diabetes system)
+Blood vessels — thin red cylinder running vertically through the torso center
+Lymph/Inflammation — distributed glow effect around the torso
+Vitamins/Hormones — brain region at top of head
+Each organ mesh color and emissive intensity driven by health status: green (normal), amber (borderline), red (critical)
+A looping pulse animation on each organ (scale oscillation via useFrame)
+A radial glow bloom effect using @react-three/postprocessing (Bloom pass)
+OrbitControls from @react-three/drei: user can rotate, zoom, and pan the body with the mouse
+Clicking an organ mesh selects it — it brightens with an outline ring, and the right panel populates
+Right panel (SystemReadingsPanel):
+System name, icon, and status badge
+Each biomarker row: name, latest value + unit, colored status bar vs reference range, trend arrow
+Compact Recharts AreaChart sparkline (all 4 report dates)
+Slides in with Framer Motion AnimatePresence
+Unselected state: subtle prompt text on the canvas "Rotate · Click an organ to explore"
+Floating organ labels (Html from @react-three/drei) that appear on hover: system name + status
+Dark background (#080d1a) matching the medical theme; works in both dark/light app themes
+Ambient + point lights to give the translucent body depth
+Out of scope
+Loading external GLTF/GLB model files (body is built procedurally from Three.js primitives)
+Mobile touch-based orbit (desktop only for now)
+Editing data from this view
+Steps
+Install R3F dependencies — Add @react-three/fiber, @react-three/drei, @react-three/postprocessing, and three (+ @types/three) to the health-dashboard package.
+
+Build the 3D body scene — Create artifacts/health-dashboard/src/components/body/BodyScene.tsx. Set up the R3F <Canvas> with OrbitControls, ambient/directional lighting, and a <EffectComposer> with <Bloom>. Build the outer body silhouette from semi-transparent Three.js geometries (CapsuleGeometry for torso/limbs, SphereGeometry for head) with a custom translucent MeshStandardMaterial (opacity ~0.15, wireframe false, transparent true, slight blue emissive).
+
+Build organ meshes — Create artifacts/health-dashboard/src/components/body/OrganMesh.tsx. Each organ is a Three.js mesh (SphereGeometry or custom shape via LatheGeometry) with emissive color driven by its health status. Use useFrame for a continuous scale-pulse animation. Attach onClick and onPointerOver handlers. Render a <Html> tooltip from drei on hover. Accept props: position, status, label, selected, onClick.
+
+Build the readings panel — Create artifacts/health-dashboard/src/components/body/SystemReadingsPanel.tsx. Receives selected category slug; renders biomarkers from healthData filtered by category. Each row: name, value/unit, a colored <progress>-style range bar, trend arrow (TrendingUp/TrendingDown icons), status badge. Include a small <AreaChart> sparkline per biomarker. Wrap in Framer Motion motion.div with slide-in animation.
+
+Assemble the /body page and wire navigation — Create artifacts/health-dashboard/src/pages/body.tsx composing the split layout. Add the /body route to App.tsx. Add a "Body" nav item (use ScanLine or Scan icon from lucide-react) to the sidebar in Layout.tsx, placed after Dashboard.
+
+Relevant files
+artifacts/health-dashboard/src/App.tsx
+artifacts/health-dashboard/src/components/Layout.tsx
+artifacts/health-dashboard/src/data/healthData.ts
+artifacts/health-dashboard/src/data/healthUtils.ts
+artifacts/health-dashboard/src/pages/dashboard.tsx
+artifacts/health-dashboard/src/index.css
+artifacts/health-dashboard/package.json
