@@ -133,10 +133,14 @@ export function SystemReadingsPanel({ categoryId }: SystemReadingsPanelProps) {
             className="flex-1 flex flex-col items-center justify-center gap-3 text-center px-8"
           >
             <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-2">
-              <span className="text-2xl opacity-40">⊕</span>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-30">
+                <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
+                <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+              </svg>
             </div>
-            <p className="text-sm font-medium text-muted-foreground">Rotate · Click an organ to explore</p>
-            <p className="text-xs text-muted-foreground/60">Select any organ to view its biomarker readings and trends</p>
+            <p className="text-sm font-medium text-muted-foreground">Click an organ to explore</p>
+            <p className="text-xs text-muted-foreground/60">Each dot shows your health status for that body system</p>
           </motion.div>
         ) : (
           <motion.div
