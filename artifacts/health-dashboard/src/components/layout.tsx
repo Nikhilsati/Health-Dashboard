@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { ThemeToggle } from "./theme-toggle";
-import { Activity, Droplet, Heart, ShieldPlus, ActivitySquare, Pill, Flame, Fingerprint, History, Sparkles, Scale, Search, Menu, X, ArrowLeftRight, User, Pencil, Check } from "lucide-react";
+import { Activity, Droplet, Heart, ShieldPlus, ActivitySquare, Pill, Flame, Fingerprint, History, Sparkles, Scale, Search, Menu, X, User, Pencil, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 import { categories, profile as defaultProfile } from "@/data/healthData";
 
@@ -88,8 +88,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <NavItem href="/" icon={Activity} label="Overview" active={location === "/"} />
             <NavItem href="/trends" icon={ActivitySquare} label="Trends" active={location === "/trends"} />
             <NavItem href="/reports" icon={History} label="Reports" active={location === "/reports"} />
-            <NavItem href="/insights" icon={Sparkles} label="Insights" active={location === "/insights"} />
-            <NavItem href="/compare" icon={ArrowLeftRight} label="Compare" active={location === "/compare"} />
             <NavItem href="/search" icon={Search} label="Search" active={location === "/search"} />
           </div>
 
