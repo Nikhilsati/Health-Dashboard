@@ -136,65 +136,46 @@ function InsightCard({ biomarker }: { biomarker: Biomarker }) {
     insight.sentiment === "good" ? "text-green-500" : insight.sentiment === "warn" ? "text-amber-500" : "text-muted-foreground";
 
   const history = biomarker.history;
-  const histMin = Math.min(...history);
-  const histMax = Math.max(...history);
-  const span = histMax - histMin || 1;
 
   return (
-    <div className="flex flex-col justify-between h-full bg-muted/30 rounded-xl border p-4 gap-3">
+    <div className="flex flex-col gap-2.5 h-full bg-muted/30 rounded-xl border px-3 py-3">
+      {/* badge + sentiment */}
       <div className="flex items-center justify-between">
-        <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${zc.badge}`}>{zc.label}</span>
-        <SentimentIcon className={`h-4 w-4 shrink-0 ${sentimentCls}`} />
+        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${zc.badge}`}>{zc.label}</span>
+        <SentimentIcon className={`h-3.5 w-3.5 shrink-0 ${sentimentCls}`} />
       </div>
 
-      <div>
-        <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Last change</div>
-        <div className="flex items-center gap-1.5">
-          {insight.diff > 0.005 ? (
-            <TrendingUp className="h-4 w-4 text-rose-500 shrink-0" />
-          ) : insight.diff < -0.005 ? (
-            <TrendingDown className="h-4 w-4 text-green-500 shrink-0" />
-          ) : (
-            <Minus className="h-4 w-4 text-muted-foreground shrink-0" />
-          )}
-          <span className="font-semibold tabular-nums text-sm">
-            {insight.diff > 0 ? "+" : ""}{formatValue(insight.diff)} {biomarker.unit}
+      {/* delta */}
+      <div className="flex items-baseline gap-1.5 flex-wrap">
+        {insight.diff > 0.005 ? (
+          <TrendingUp className="h-3.5 w-3.5 text-rose-500 shrink-0 self-center" />
+        ) : insight.diff < -0.005 ? (
+          <TrendingDown className="h-3.5 w-3.5 text-green-500 shrink-0 self-center" />
+        ) : (
+          <Minus className="h-3.5 w-3.5 text-muted-foreground shrink-0 self-center" />
+        )}
+        <span className="font-semibold tabular-nums text-sm leading-none">
+          {insight.diff > 0 ? "+" : ""}{formatValue(insight.diff)} {biomarker.unit}
+        </span>
+        <span className="text-[10px] text-muted-foreground">
+          {insight.pct > 0 ? "+" : ""}{insight.pct.toFixed(1)}%
+        </span>
+      </div>
+
+      {/* readings row */}
+      <div className="flex items-center gap-1 text-[10px]">
+        {history.map((v, i) => (
+          <span key={i} className={i === history.length - 1 ? "font-semibold" : "text-muted-foreground"}>
+            {formatValue(v)}{i < history.length - 1 ? <span className="mx-0.5 text-muted-foreground/50">›</span> : ""}
           </span>
-          <span className="text-xs text-muted-foreground">
-            ({insight.pct > 0 ? "+" : ""}{insight.pct.toFixed(1)}%)
-          </span>
-        </div>
+        ))}
+        <span className="text-muted-foreground ml-0.5">{biomarker.unit}</span>
       </div>
 
-      <div>
-        <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-2">All readings</div>
-        <div className="flex items-end gap-1 h-9">
-          {history.map((v, i) => {
-            const h = Math.max(16, ((v - histMin) / span) * 100);
-            return (
-              <div key={i} className="flex-1 flex items-end">
-                <div
-                  className="w-full rounded-sm"
-                  style={{
-                    height: `${h}%`,
-                    backgroundColor: zc.fill,
-                    opacity: i === history.length - 1 ? 1 : 0.3 + i * 0.15,
-                  }}
-                />
-              </div>
-            );
-          })}
-        </div>
-        <div className="flex items-center justify-between mt-1.5">
-          <span className="text-[10px] text-muted-foreground">{formatValue(history[0])}</span>
-          <ArrowRight className="h-3 w-3 text-muted-foreground" />
-          <span className="text-[10px] font-medium">{formatValue(history[history.length - 1])} {biomarker.unit}</span>
-        </div>
-      </div>
-
-      <div className="border-t pt-3">
-        <p className="text-xs font-semibold mb-0.5">{insight.headline}</p>
-        <p className="text-xs text-muted-foreground leading-relaxed">{insight.detail}</p>
+      {/* divider + insight */}
+      <div className="border-t pt-2">
+        <p className="text-[10px] font-semibold text-foreground/80 mb-0.5">{insight.headline}</p>
+        <p className="text-[10px] text-muted-foreground leading-relaxed">{insight.detail}</p>
       </div>
     </div>
   );
@@ -215,15 +196,15 @@ function BiomarkerChart({ biomarker, index }: { biomarker: Biomarker; index: num
   ];
   const rawMin = Math.min(...allVals);
   const rawMax = Math.max(...allVals);
-  const pad = (rawMax - rawMin) * 0.18 || rawMax * 0.15 || 1;
+  const pad = (rawMax - rawMin) * 0.12 || rawMax * 0.08 || 1;
 
   let domainMin = Math.max(0, rawMin - pad);
   let domainMax = rawMax + pad;
 
-  // Guarantee the healthy side of every reference line occupies ≥20% of the chart
+  // Guarantee the healthy side of every reference line occupies ≥15% of the chart
   const firstSpan = domainMax - domainMin;
-  if (refMax !== undefined) domainMin = Math.min(domainMin, refMax - firstSpan * 0.22);
-  if (refMin !== undefined) domainMax = Math.max(domainMax, refMin + firstSpan * 0.22);
+  if (refMax !== undefined) domainMin = Math.min(domainMin, refMax - firstSpan * 0.15);
+  if (refMin !== undefined) domainMax = Math.max(domainMax, refMin + firstSpan * 0.15);
   // Re-clamp to zero if all real data is non-negative
   if (domainMin < 0 && Math.min(...biomarker.history) >= 0) domainMin = 0;
 
@@ -234,16 +215,16 @@ function BiomarkerChart({ biomarker, index }: { biomarker: Biomarker; index: num
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.04, 0.5) }}
-      className="bg-card border rounded-xl p-5 shadow-sm"
+      className="bg-card border rounded-xl px-4 pt-3 pb-4 shadow-sm"
     >
       {/* header */}
-      <div className="flex justify-between items-start mb-4">
+      <div className="flex justify-between items-center mb-2">
         <div>
-          <h3 className="font-semibold text-base leading-tight">{biomarker.name}</h3>
-          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{biomarker.description}</p>
+          <h3 className="font-semibold text-sm leading-tight">{biomarker.name}</h3>
+          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{biomarker.description}</p>
         </div>
         <div className="text-right shrink-0 ml-3">
-          <div className="text-xl font-bold tabular-nums">
+          <div className="text-lg font-bold tabular-nums">
             {formatValue(latest)}{" "}
             <span className="text-xs font-normal text-muted-foreground">{biomarker.unit}</span>
           </div>
@@ -251,8 +232,8 @@ function BiomarkerChart({ biomarker, index }: { biomarker: Biomarker; index: num
       </div>
 
       {/* 2-col: chart + insight */}
-      <div className="grid grid-cols-[1fr_168px] gap-4">
-        <div className="h-[180px]">
+      <div className="grid grid-cols-[1fr_156px] gap-3">
+        <div className="h-[140px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
 
