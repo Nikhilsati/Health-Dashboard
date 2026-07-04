@@ -5,7 +5,7 @@ import {
   AreaChart, Area, XAxis, YAxis, Tooltip,
   ResponsiveContainer, ReferenceLine, ReferenceArea, CartesianGrid,
 } from "recharts";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   TrendingUp, TrendingDown, Minus, AlertCircle, CheckCircle2,
 } from "lucide-react";
@@ -57,10 +57,79 @@ function getRangeStatus(value: number, ref: Biomarker["referenceRange"]): RangeS
 }
 
 const ZONE = {
-  high:   { stroke: "#ef4444", fill: "#ef4444", bg: "#ef444414", badge: "bg-red-500/15 text-red-400",    label: "Above Range" },
-  normal: { stroke: "#22c55e", fill: "#22c55e", bg: "#22c55e14", badge: "bg-green-500/15 text-green-500", label: "In Range" },
-  low:    { stroke: "#f59e0b", fill: "#f59e0b", bg: "#f59e0b14", badge: "bg-amber-500/15 text-amber-400", label: "Below Range" },
+  high:   { stroke: "#ef4444", fill: "#ef4444", bg: "#ef444408", badge: "bg-red-500/10 text-red-400 border border-red-500/20",    label: "Above Range" },
+  normal: { stroke: "#22c55e", fill: "#22c55e", bg: "#22c55e08", badge: "bg-green-500/10 text-green-400 border border-green-500/20", label: "In Range" },
+  low:    { stroke: "#f59e0b", fill: "#f59e0b", bg: "#f59e0b08", badge: "bg-amber-500/10 text-amber-400 border border-amber-500/20", label: "Below Range" },
 };
+
+function formatAxisDate(dateStr?: string) {
+  if (!dateStr) return "";
+  const parts = dateStr.split("-");
+  if (parts.length < 2) return dateStr;
+  const year = parts[0].slice(-2);
+  const monthIdx = parseInt(parts[1], 10) - 1;
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const monthName = months[monthIdx] || "";
+  return `${monthName} '${year}`;
+}
+
+function getBriefInsight(biomarker: Biomarker): string {
+  const h = biomarker.history;
+  if (h.length < 2) return "Stable and within range.";
+  const latest = h[h.length - 1];
+  const prev = h[h.length - 2];
+  const diff = latest - prev;
+  const pct = prev ? (diff / prev) * 100 : 0;
+  const status = getRangeStatus(latest, biomarker.referenceRange);
+  
+  if (status === "normal") {
+    if (Math.abs(pct) < 1) {
+      return "Stable and within the normal range over the last 2 years.";
+    }
+    return `Improved by ${Math.abs(pct).toFixed(1)}% since your previous test.`;
+  }
+  if (status === "high") {
+    if (diff < 0) {
+      return `Improving: decreased by ${Math.abs(pct).toFixed(1)}% since previous test, trending toward normal.`;
+    }
+    return `Elevated by ${Math.abs(pct).toFixed(1)}% above optimal levels. Monitor closely.`;
+  }
+  if (status === "low") {
+    if (diff > 0) {
+      return `Improving: increased by ${Math.abs(pct).toFixed(1)}% since previous test, trending toward normal.`;
+    }
+    return `Below optimal range by ${Math.abs(pct).toFixed(1)}%. Consider supplementation.`;
+  }
+  return "Stable over the last 2 years.";
+}
+
+function AnimatedValue({ value, unit, className }: { value: number; unit: string; className?: string }) {
+  const [displayValue, setDisplayValue] = useState(0);
+  useEffect(() => {
+    let start = 0;
+    const end = value;
+    const duration = 800;
+    const startTime = performance.now();
+    let frameId: number;
+    const update = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = progress * (2 - progress);
+      setDisplayValue(start + ease * (end - start));
+      if (progress < 1) {
+        frameId = requestAnimationFrame(update);
+      }
+    };
+    frameId = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(frameId);
+  }, [value]);
+  return (
+    <span className={className}>
+      {formatValue(displayValue)}
+      {unit && <span className="text-xs font-normal text-muted-foreground ml-1">{unit}</span>}
+    </span>
+  );
+}
 
 function buildZoneData(history: number[], refMin?: number, refMax?: number, domainMin = 0) {
   return history.map((value, i) => {
@@ -113,15 +182,97 @@ function ZoneAreaChart({
 }: { biomarker: Biomarker; height: number; showXLabels?: boolean }) {
   const { min: refMin, max: refMax } = parseRef(biomarker.referenceRange);
   const latest = biomarker.history[biomarker.history.length - 1];
-  const latestStatus = getRangeStatus(latest, biomarker.referenceRange);
   const { dMin, dMax } = computeDomain(biomarker.history, refMin, refMax);
-  const data = buildZoneData(biomarker.history, refMin, refMax, dMin);
   const dates = reports.map(r => r.date);
 
+  const [isHovered, setIsHovered] = useState(false);
+
+  const range = dMax - dMin || 1;
+  const maxPct = refMax !== undefined ? Math.max(0, Math.min(100, 100 - ((refMax - dMin) / range) * 100)) : 0;
+  const minPct = refMin !== undefined ? Math.max(0, Math.min(100, 100 - ((refMin - dMin) / range) * 100)) : 100;
+
+  const data = biomarker.history.map((val, i) => ({ x: i, value: val }));
+
+  const renderCustomDot = (props: any) => {
+    const { cx, cy, index, payload } = props;
+    const isLatest = index === data.length - 1;
+    const val = payload.value;
+    const status = getRangeStatus(val, biomarker.referenceRange);
+    const color = ZONE[status].stroke;
+
+    if (isLatest) {
+      return (
+        <g key={`dot-${index}`}>
+          <circle cx={cx} cy={cy} r={8} fill={color} opacity={0.3} />
+          <circle cx={cx} cy={cy} r={5} fill={color} stroke="var(--color-card)" strokeWidth={1.5} />
+          <text
+            x={cx}
+            y={cy - 12}
+            textAnchor="middle"
+            fill="var(--color-foreground)"
+            fontSize="10"
+            fontWeight="700"
+            className="tabular-nums font-sans"
+          >
+            {formatValue(val)}
+          </text>
+        </g>
+      );
+    }
+
+    return (
+      <circle
+        key={`dot-${index}`}
+        cx={cx}
+        cy={cy}
+        r={3.5}
+        fill={color}
+        stroke="var(--color-card)"
+        strokeWidth={1}
+        opacity={0.4}
+      />
+    );
+  };
+
   return (
-    <div style={{ height }}>
+    <div 
+      style={{ height }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="relative"
+    >
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 12, right: 35, bottom: 0, left: 0 }}>
+        <AreaChart data={data} margin={{ top: 18, right: 35, bottom: 0, left: 0 }}>
+          <defs>
+            <linearGradient id={`stroke-${biomarker.id}`} x1="0" y1="0" x2="0" y2="1">
+              {refMax !== undefined && (
+                <>
+                  <stop offset="0%" stopColor="#ef4444" />
+                  <stop offset={`${maxPct}%`} stopColor="#ef4444" />
+                  <stop offset={`${maxPct}%`} stopColor="#22c55e" />
+                </>
+              )}
+              {refMin !== undefined ? (
+                <>
+                  <stop offset={`${minPct}%`} stopColor="#22c55e" />
+                  <stop offset={`${minPct}%`} stopColor="#f59e0b" />
+                  <stop offset="100%" stopColor="#f59e0b" />
+                </>
+              ) : (
+                <stop offset="100%" stopColor="#22c55e" />
+              )}
+            </linearGradient>
+
+            <linearGradient id={`fill-${biomarker.id}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={refMax !== undefined ? "#ef4444" : "#22c55e"} stopOpacity={0.25} />
+              {refMax !== undefined && (
+                <stop offset={`${maxPct}%`} stopColor="#ef4444" stopOpacity={0.2} />
+              )}
+              <stop offset={`${refMin !== undefined ? minPct : 50}%`} stopColor="#22c55e" stopOpacity={0.15} />
+              <stop offset="100%" stopColor={refMin !== undefined ? "#f59e0b" : "#22c55e"} stopOpacity={0.0} />
+            </linearGradient>
+          </defs>
+
           {refMax !== undefined && (
             <ReferenceArea y1={refMax} y2={dMax} fill={ZONE.high.bg} fillOpacity={1} stroke="none" />
           )}
@@ -135,13 +286,18 @@ function ZoneAreaChart({
             <ReferenceArea y1={dMin} y2={refMin} fill={ZONE.low.bg} fillOpacity={1} stroke="none" />
           )}
 
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" strokeOpacity={0.07} />
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" strokeOpacity={0.05} />
 
           <XAxis
             dataKey="x" type="number" scale="linear"
             domain={[0, data.length - 1]}
             ticks={data.map((_, i) => i)}
-            tickFormatter={(i: number) => showXLabels ? (dates[i]?.slice(2, 7) ?? "") : ""}
+            tickFormatter={(i: number) => {
+              if (!showXLabels) return "";
+              if (i === 0) return "First Test";
+              if (i === data.length - 1) return "Latest";
+              return formatAxisDate(dates[i]);
+            }}
             axisLine={false} tickLine={false}
             tick={{ fontSize: 8, fill: "var(--color-muted-foreground)" }}
             dy={3} interval={0}
@@ -155,37 +311,28 @@ function ZoneAreaChart({
               v >= 100 ? Math.round(v).toString() : v >= 10 ? v.toFixed(1) : v.toFixed(2)
             }
           />
-          <Tooltip content={<ChartTooltip dates={dates} unit={biomarker.unit} />} />
+          <Tooltip 
+            content={<ChartTooltip dates={dates} unit={biomarker.unit} />}
+            cursor={{ stroke: "var(--color-border)", strokeWidth: 1, strokeDasharray: "3 3", opacity: 0.5 }}
+          />
 
-          {refMax !== undefined && (
-            <ReferenceLine y={refMax} stroke={ZONE.high.stroke} strokeOpacity={0.7}
+          {isHovered && refMax !== undefined && (
+            <ReferenceLine y={refMax} stroke="#ef4444" strokeOpacity={0.5}
               strokeDasharray="4 3" strokeWidth={1.2}
-              label={{ value: `Max: ${refMax}`, fill: "#94a3b8", fontSize: 8, position: "right", offset: 5 }} />
+              label={{ value: `Max: ${refMax}`, fill: "var(--color-muted-foreground)", fontSize: 8, position: "right", offset: 5 }} />
           )}
-          {refMin !== undefined && (
-            <ReferenceLine y={refMin} stroke={ZONE.low.stroke} strokeOpacity={0.7}
+          {isHovered && refMin !== undefined && (
+            <ReferenceLine y={refMin} stroke="#f59e0b" strokeOpacity={0.5}
               strokeDasharray="4 3" strokeWidth={1.2}
-              label={{ value: `Min: ${refMin}`, fill: "#94a3b8", fontSize: 8, position: "right", offset: 5 }} />
+              label={{ value: `Min: ${refMin}`, fill: "var(--color-muted-foreground)", fontSize: 8, position: "right", offset: 5 }} />
           )}
 
-          {refMax !== undefined && (
-            <Area type="monotone" dataKey="high" baseValue={refMax}
-              stroke="none" fill={ZONE.high.fill} fillOpacity={0.4}
-              isAnimationActive={false} dot={false} activeDot={false} legendType="none" />
-          )}
-          <Area type="monotone" dataKey="normal" baseValue={refMin ?? dMin}
-            stroke="none" fill={ZONE.normal.fill} fillOpacity={0.35}
-            isAnimationActive={false} dot={false} activeDot={false} legendType="none" />
-          {refMin !== undefined && (
-            <Area type="monotone" dataKey="low" baseValue={dMin}
-              stroke="none" fill={ZONE.low.fill} fillOpacity={0.45}
-              isAnimationActive={false} dot={false} activeDot={false} legendType="none" />
-          )}
           <Area type="monotone" dataKey="value"
-            stroke={ZONE[latestStatus].stroke} strokeWidth={2}
-            fill="none" isAnimationActive={false}
-            dot={{ r: 3, fill: ZONE[latestStatus].stroke, stroke: "var(--color-card)", strokeWidth: 1.5 }}
-            activeDot={{ r: 5, fill: ZONE[latestStatus].stroke, stroke: "var(--color-card)", strokeWidth: 1.5 }}
+            stroke={`url(#stroke-${biomarker.id})`} strokeWidth={3} strokeLinecap="round"
+            fill={`url(#fill-${biomarker.id})`} isAnimationActive={true}
+            animationDuration={800} animationEasing="ease-in-out"
+            dot={renderCustomDot}
+            activeDot={{ r: 6, fill: "var(--color-card)", strokeWidth: 2 }}
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -201,41 +348,35 @@ function MiniChart({ biomarker }: { biomarker: Biomarker }) {
   const pct = prev ? (diff / prev) * 100 : 0;
   const status = getRangeStatus(latest, biomarker.referenceRange);
   const zc = ZONE[status];
+  const briefInsight = getBriefInsight(biomarker);
 
   return (
-    <div className="glass-card border border-border/40 rounded-xl px-3 pt-2.5 pb-3 flex flex-col gap-1.5 isomorphic-lift">
-      {/* top row: name + badge */}
-      <div className="flex items-start justify-between gap-1">
-        <div>
-          <div className="text-xs font-semibold leading-tight">{biomarker.name}</div>
-          <div className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{biomarker.description}</div>
-          <div className="text-[10px] text-muted-foreground font-medium mt-1">
-            Normal: {formatRefRange(biomarker.referenceRange)} <span className="opacity-70 text-[9px]">{biomarker.unit}</span>
-          </div>
-        </div>
-        <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 ${zc.badge}`}>
+    <div className="glass-card border border-border/40 rounded-xl px-4 py-3 flex flex-col gap-2 isomorphic-lift">
+      <div className="flex items-center justify-between">
+        <div className="text-xs font-semibold leading-tight text-foreground/90">{biomarker.name}</div>
+        <span className={`text-[9px] font-semibold px-2 py-0.5 rounded-full ${zc.badge}`}>
           {zc.label}
         </span>
       </div>
 
-      {/* value + delta */}
-      <div className="flex items-baseline gap-2 mt-0.5">
-        <span className="text-base font-bold tabular-nums">
-          {formatValue(latest)}
-          <span className="text-[10px] font-normal text-muted-foreground ml-1">{biomarker.unit}</span>
-        </span>
-        <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-          {diff > 0.005
-            ? <TrendingUp className="h-3 w-3 text-rose-500" />
-            : diff < -0.005
-            ? <TrendingDown className="h-3 w-3 text-green-500" />
-            : <Minus className="h-3 w-3" />}
-          {diff > 0 ? "+" : ""}{formatValue(diff)} ({pct > 0 ? "+" : ""}{pct.toFixed(1)}%)
+      <div className="flex items-baseline gap-2">
+        <AnimatedValue value={latest} unit={biomarker.unit} className="text-xl font-bold tabular-nums text-foreground/95" />
+        <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground font-medium">
+          {diff > 0.005 ? "↑" : diff < -0.005 ? "↓" : "→"}{" "}
+          {Math.abs(pct).toFixed(1)}% ({diff > 0 ? "+" : ""}{formatValue(diff)})
         </span>
       </div>
 
-      {/* chart */}
-      <ZoneAreaChart biomarker={biomarker} height={135} showXLabels={true} />
+      <ZoneAreaChart biomarker={biomarker} height={115} showXLabels={true} />
+
+      <div className="border-t border-border/20 pt-2 flex flex-col gap-1">
+        <div className="text-[9px] text-muted-foreground">
+          Normal Range: <span className="font-semibold text-foreground/80">{formatRefRange(biomarker.referenceRange)}</span> {biomarker.unit}
+        </div>
+        <p className="text-[10px] text-muted-foreground/90 leading-normal italic">
+          {briefInsight}
+        </p>
+      </div>
     </div>
   );
 }
@@ -341,32 +482,50 @@ function InsightCard({ biomarker }: { biomarker: Biomarker }) {
 
 function BiomarkerChart({ biomarker, index }: { biomarker: Biomarker; index: number }) {
   const latest = biomarker.history[biomarker.history.length - 1];
+  const prev = biomarker.history[biomarker.history.length - 2];
+  const diff = latest - prev;
+  const pct = prev ? (diff / prev) * 100 : 0;
+  const status = getRangeStatus(latest, biomarker.referenceRange);
+  const zc = ZONE[status];
+  const briefInsight = getBriefInsight(biomarker);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.04, 0.5) }}
-      className="glass-card border border-border/40 rounded-2xl px-4 pt-3 pb-4 shadow-md isomorphic-lift flex flex-col justify-between"
+      className="glass-card border border-border/40 rounded-2xl p-5 shadow-md isomorphic-lift flex flex-col gap-3"
     >
-      <div className="flex justify-between items-start mb-3">
+      <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-sm leading-tight">{biomarker.name}</h3>
-          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{biomarker.description}</p>
-          <div className="text-[10px] text-muted-foreground font-medium mt-1">
-            Normal Range: {formatRefRange(biomarker.referenceRange)} {biomarker.unit}
-          </div>
+          <h3 className="font-bold text-sm leading-tight text-foreground/90">{biomarker.name}</h3>
+          <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{biomarker.description}</p>
         </div>
-        <div className="text-right shrink-0 ml-3">
-          <div className="text-lg font-bold tabular-nums">
-            {formatValue(latest)}{" "}
-            <span className="text-xs font-normal text-muted-foreground">{biomarker.unit}</span>
-          </div>
-        </div>
+        <span className={`text-[9px] font-semibold px-2 py-0.5 rounded-full ${zc.badge}`}>
+          {zc.label}
+        </span>
       </div>
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_156px] gap-3">
-        <ZoneAreaChart biomarker={biomarker} height={140} showXLabels={true} />
+
+      <div className="flex items-baseline gap-2">
+        <AnimatedValue value={latest} unit={biomarker.unit} className="text-2xl font-black tabular-nums text-foreground/95" />
+        <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground font-semibold">
+          {diff > 0.005 ? "↑" : diff < -0.005 ? "↓" : "→"}{" "}
+          {Math.abs(pct).toFixed(1)}% ({diff > 0 ? "+" : ""}{formatValue(diff)})
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_160px] gap-4 items-end">
+        <ZoneAreaChart biomarker={biomarker} height={120} showXLabels={true} />
         <InsightCard biomarker={biomarker} />
+      </div>
+
+      <div className="border-t border-border/20 pt-2.5 flex flex-col gap-1">
+        <div className="text-[10px] text-muted-foreground">
+          Normal Range: <span className="font-semibold text-foreground/80">{formatRefRange(biomarker.referenceRange)}</span> {biomarker.unit}
+        </div>
+        <p className="text-[11px] text-muted-foreground/90 leading-normal italic">
+          {briefInsight}
+        </p>
       </div>
     </motion.div>
   );
