@@ -101,42 +101,42 @@
 }
 
 .dark {
-  --background: 222 47% 11%;
+  --background: 240 10% 4%; /* Obsidian Charcoal */
   --foreground: 210 40% 98%;
   
-  --card: 222 47% 14%;
+  --card: 240 10% 6%;
   --card-foreground: 210 40% 98%;
-  --card-border: 217 32% 17%;
+  --card-border: 240 10% 10%;
   
-  --popover: 222 47% 14%;
+  --popover: 240 10% 6%;
   --popover-foreground: 210 40% 98%;
-  --popover-border: 217 32% 17%;
+  --popover-border: 240 10% 10%;
   
   --primary: 175 60% 50%;
-  --primary-foreground: 222 47% 11%;
+  --primary-foreground: 240 10% 4%;
   
-  --secondary: 217 32% 17%;
+  --secondary: 240 10% 9%;
   --secondary-foreground: 210 40% 98%;
   
-  --muted: 217 32% 17%;
-  --muted-foreground: 215 20% 65%;
+  --muted: 240 10% 9%;
+  --muted-foreground: 240 5% 65%;
   
-  --accent: 217 32% 20%;
+  --accent: 240 10% 12%;
   --accent-foreground: 210 40% 98%;
   
   --destructive: 0 62% 30%;
   --destructive-foreground: 210 40% 98%;
   
-  --border: 217 32% 17%;
-  --input: 217 32% 17%;
+  --border: 240 10% 10%;
+  --input: 240 10% 9%;
   --ring: 175 60% 50%;
 
-  --sidebar: 222 47% 11%;
+  --sidebar: 240 10% 4%;
   --sidebar-foreground: 210 40% 98%;
-  --sidebar-border: 217 32% 17%;
+  --sidebar-border: 240 10% 10%;
   --sidebar-primary: 175 60% 50%;
-  --sidebar-primary-foreground: 222 47% 11%;
-  --sidebar-accent: 217 32% 17%;
+  --sidebar-primary-foreground: 240 10% 4%;
+  --sidebar-accent: 240 10% 9%;
   --sidebar-accent-foreground: 210 40% 98%;
   --sidebar-ring: 175 60% 50%;
 }
@@ -150,3 +150,81 @@
     @apply font-sans antialiased bg-background text-foreground transition-colors duration-300;
   }
 }
+
+/* Glassmorphism & Isomorphic Styles */
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-20px) scale(1.05); }
+}
+
+@keyframes float-reverse {
+  0%, 100% { transform: translateY(0) scale(1.05); }
+  50% { transform: translateY(20px) scale(0.95); }
+}
+
+.animate-float {
+  animation: float 12s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: float-reverse 15s ease-in-out infinite;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .glass-card {
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(24px) saturate(110%);
+  -webkit-backdrop-filter: blur(24px) saturate(110%);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.dark .glass-panel {
+  background: rgba(10, 15, 30, 0.6);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.isomorphic-lift {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.isomorphic-lift:hover {
+  transform: translateY(-5px) rotateX(1deg) rotateY(-0.5deg);
+  box-shadow: 0 20px 40px rgba(31, 38, 135, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.dark .isomorphic-lift:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(175, 60, 50, 0.15);
+  border-color: rgba(175, 60, 50, 0.3);
+}
+
+/* Glass inputs/controls */
+.glass-input {
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+.dark .glass-input {
+  background: rgba(15, 23, 42, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-input:focus {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 2px rgba(175, 60, 40, 0.2);
+}
+

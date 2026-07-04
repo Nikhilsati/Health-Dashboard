@@ -19,42 +19,42 @@ export default function Compare() {
 
       <div className="flex flex-col sm:flex-row gap-4 mb-8">
         <div className="flex-1">
-          <label className="text-sm font-medium mb-1 block">Baseline Report</label>
+          <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2.5 block">Baseline Report</label>
           <select 
-            className="w-full bg-card border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-primary/50"
+            className="w-full glass-input border border-border/40 rounded-xl p-3 outline-none text-foreground/90 font-semibold transition-all"
             value={reportA}
             onChange={(e) => setReportA(Number(e.target.value))}
           >
             {reports.map((r, i) => (
-              <option key={r.id} value={i}>{r.date} ({r.lab})</option>
+              <option key={r.id} value={i} className="bg-background text-foreground">{r.date} ({r.lab})</option>
             ))}
           </select>
         </div>
         <div className="flex-1">
-          <label className="text-sm font-medium mb-1 block">Comparison Report</label>
+          <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2.5 block">Comparison Report</label>
           <select 
-            className="w-full bg-card border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-primary/50"
+            className="w-full glass-input border border-border/40 rounded-xl p-3 outline-none text-foreground/90 font-semibold transition-all"
             value={reportB}
             onChange={(e) => setReportB(Number(e.target.value))}
           >
             {reports.map((r, i) => (
-              <option key={r.id} value={i}>{r.date} ({r.lab})</option>
+              <option key={r.id} value={i} className="bg-background text-foreground">{r.date} ({r.lab})</option>
             ))}
           </select>
         </div>
       </div>
 
-      <div className="bg-card border rounded-xl overflow-hidden shadow-sm overflow-x-auto">
+      <div className="glass-card border border-border/40 rounded-2xl overflow-hidden shadow-md overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="bg-muted/50 text-muted-foreground border-b">
+          <thead className="bg-primary/5 text-muted-foreground border-b border-border/40">
             <tr>
-              <th className="p-4 font-medium">Biomarker</th>
-              <th className="p-4 font-medium">{reports[reportA].date}</th>
-              <th className="p-4 font-medium">{reports[reportB].date}</th>
-              <th className="p-4 font-medium">Change</th>
+              <th className="p-4 font-bold text-xs uppercase tracking-wider text-foreground/75">Biomarker</th>
+              <th className="p-4 font-bold text-xs uppercase tracking-wider text-foreground/75">{reports[reportA].date}</th>
+              <th className="p-4 font-bold text-xs uppercase tracking-wider text-foreground/75">{reports[reportB].date}</th>
+              <th className="p-4 font-bold text-xs uppercase tracking-wider text-foreground/75">Change</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-border/40 text-foreground/80">
             {biomarkers.map(b => {
               const valA = b.history[reportA];
               const valB = b.history[reportB];
@@ -64,16 +64,16 @@ export default function Compare() {
               let diffColor = "text-muted-foreground";
               if (Math.abs(pct) > 5) {
                 diffColor = (b.trendDirection === "down" && diff > 0) || (b.trendDirection === "up" && diff < 0) 
-                  ? "text-red-500" 
-                  : "text-green-500";
+                  ? "text-red-500 font-bold" 
+                  : "text-green-500 font-bold";
               }
 
               return (
-                <tr key={b.id} className="hover:bg-muted/10 transition-colors">
-                  <td className="p-4 font-medium">{b.name}</td>
-                  <td className="p-4">{formatValue(valA)}</td>
-                  <td className="p-4">{formatValue(valB)}</td>
-                  <td className={`p-4 font-medium ${diffColor}`}>
+                <tr key={b.id} className="hover:bg-primary/5 transition-all">
+                  <td className="p-4 font-bold text-foreground/90">{b.name}</td>
+                  <td className="p-4 font-semibold">{formatValue(valA)}</td>
+                  <td className="p-4 font-semibold">{formatValue(valB)}</td>
+                  <td className={`p-4 font-semibold ${diffColor}`}>
                     {diff > 0 ? "+" : ""}{formatValue(diff)} ({diff > 0 ? "+" : ""}{pct.toFixed(1)}%)
                   </td>
                 </tr>

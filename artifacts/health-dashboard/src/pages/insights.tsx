@@ -39,20 +39,20 @@ export default function Insights() {
           transition={{ delay: 0.1 }}
         >
           <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="h-5 w-5 text-amber-500" />
-            <h2 className="text-xl font-semibold">Needs Attention</h2>
+            <Sparkles className="h-5 w-5 text-amber-500 animate-pulse" />
+            <h2 className="text-xl font-bold text-foreground/90">Needs Attention</h2>
           </div>
           <div className="grid gap-4">
             {needsAttention.map((item, i) => (
-              <div key={item.id} className="bg-card border rounded-xl p-5 shadow-sm">
+              <div key={item.id} className="glass-card border border-border/40 rounded-2xl p-5 shadow-md isomorphic-lift hover:border-red-500/30">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-semibold text-lg">{item.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <h3 className="font-bold text-lg text-foreground/90">{item.name}</h3>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                       Currently at {item.latest} {item.unit}. {item.diff > 0 ? "Increased" : "Decreased"} by {Math.abs(item.diff).toFixed(1)} since last report.
                     </p>
                   </div>
-                  <div className={`flex items-center gap-1 font-medium ${item.diff > 0 ? "text-red-500" : "text-amber-500"}`}>
+                  <div className={`flex items-center gap-1 text-sm font-bold ${item.diff > 0 ? "text-red-500" : "text-amber-500"}`}>
                     {item.diff > 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
                     {Math.abs(item.pct).toFixed(1)}%
                   </div>
@@ -60,7 +60,7 @@ export default function Insights() {
               </div>
             ))}
             {needsAttention.length === 0 && (
-              <div className="text-muted-foreground p-4 bg-card border rounded-xl">No parameters currently need immediate attention.</div>
+              <div className="text-muted-foreground p-4 glass-card border border-border/40 rounded-2xl text-xs font-semibold">No parameters currently need immediate attention.</div>
             )}
           </div>
         </motion.div>
@@ -72,19 +72,19 @@ export default function Insights() {
         >
           <div className="flex items-center gap-2 mb-4 mt-8">
             <Sparkles className="h-5 w-5 text-green-500" />
-            <h2 className="text-xl font-semibold">Improvements</h2>
+            <h2 className="text-xl font-bold text-foreground/90">Improvements</h2>
           </div>
           <div className="grid gap-4">
             {improved.map((item, i) => (
-              <div key={item.id} className="bg-card border rounded-xl p-5 shadow-sm">
+              <div key={item.id} className="glass-card border border-border/40 rounded-2xl p-5 shadow-md isomorphic-lift hover:border-green-500/30">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-semibold text-lg">{item.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <h3 className="font-bold text-lg text-foreground/90">{item.name}</h3>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                       Moving in the right direction. Currently at {item.latest} {item.unit}.
                     </p>
                   </div>
-                  <div className="flex items-center gap-1 font-medium text-green-600">
+                  <div className="flex items-center gap-1 text-sm font-bold text-green-600">
                     {item.diff > 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
                     {Math.abs(item.pct).toFixed(1)}%
                   </div>
@@ -92,7 +92,7 @@ export default function Insights() {
               </div>
             ))}
             {improved.length === 0 && (
-              <div className="text-muted-foreground p-4 bg-card border rounded-xl">No significant improvements in this period.</div>
+              <div className="text-muted-foreground p-4 glass-card border border-border/40 rounded-2xl text-xs font-semibold">No significant improvements in this period.</div>
             )}
           </div>
         </motion.div>

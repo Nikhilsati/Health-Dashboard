@@ -36,6 +36,19 @@ function parseRef(ref: Biomarker["referenceRange"]): { min?: number; max?: numbe
   return { min: (ref as any).min, max: (ref as any).max };
 }
 
+function formatRefRange(ref: Biomarker["referenceRange"]): string {
+  if (Array.isArray(ref)) return `${ref[0]}–${ref[1]}`;
+  if (typeof ref === "object" && ref !== null) {
+    if ((ref as any).text) return (ref as any).text;
+    const min = (ref as any).min;
+    const max = (ref as any).max;
+    if (min !== undefined && max !== undefined) return `${min}–${max}`;
+    if (min !== undefined) return `≥ ${min}`;
+    if (max !== undefined) return `< ${max}`;
+  }
+  return "N/A";
+}
+
 function getRangeStatus(value: number, ref: Biomarker["referenceRange"]): RangeStatus {
   const { min, max } = parseRef(ref);
   if (max !== undefined && value > max) return "high";
@@ -84,11 +97,11 @@ function computeDomain(history: number[], refMin?: number, refMax?: number) {
 function ChartTooltip({ active, payload, label, dates, unit }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-card border rounded-lg px-3 py-2 shadow-lg text-sm">
-      <p className="text-muted-foreground text-xs mb-1">{dates?.[label] ?? label}</p>
-      <p className="font-semibold tabular-nums">
+    <div className="glass-card border border-border/40 rounded-xl px-3 py-2 shadow-lg text-xs backdrop-blur-md">
+      <p className="text-muted-foreground text-[10px] mb-0.5">{dates?.[label] ?? label}</p>
+      <p className="font-bold tabular-nums text-foreground/90">
         {formatValue(payload[0].value)}{" "}
-        <span className="font-normal text-muted-foreground">{unit}</span>
+        <span className="font-normal text-muted-foreground text-[10px]">{unit}</span>
       </p>
     </div>
   );
@@ -108,7 +121,7 @@ function ZoneAreaChart({
   return (
     <div style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 6, right: 4, bottom: 0, left: 0 }}>
+        <AreaChart data={data} margin={{ top: 12, right: 35, bottom: 0, left: 0 }}>
           {refMax !== undefined && (
             <ReferenceArea y1={refMax} y2={dMax} fill={ZONE.high.bg} fillOpacity={1} stroke="none" />
           )}
@@ -128,7 +141,7 @@ function ZoneAreaChart({
             dataKey="x" type="number" scale="linear"
             domain={[0, data.length - 1]}
             ticks={data.map((_, i) => i)}
-            tickFormatter={(i: number) => showXLabels ? (dates[i]?.slice(0, 7) ?? "") : ""}
+            tickFormatter={(i: number) => showXLabels ? (dates[i]?.slice(2, 7) ?? "") : ""}
             axisLine={false} tickLine={false}
             tick={{ fontSize: 8, fill: "var(--color-muted-foreground)" }}
             dy={3} interval={0}
@@ -145,12 +158,14 @@ function ZoneAreaChart({
           <Tooltip content={<ChartTooltip dates={dates} unit={biomarker.unit} />} />
 
           {refMax !== undefined && (
-            <ReferenceLine y={refMax} stroke={ZONE.high.stroke} strokeOpacity={0.6}
-              strokeDasharray="4 3" strokeWidth={1.2} />
+            <ReferenceLine y={refMax} stroke={ZONE.high.stroke} strokeOpacity={0.7}
+              strokeDasharray="4 3" strokeWidth={1.2}
+              label={{ value: `Max: ${refMax}`, fill: "#94a3b8", fontSize: 8, position: "right", offset: 5 }} />
           )}
           {refMin !== undefined && (
-            <ReferenceLine y={refMin} stroke={ZONE.low.stroke} strokeOpacity={0.6}
-              strokeDasharray="4 3" strokeWidth={1.2} />
+            <ReferenceLine y={refMin} stroke={ZONE.low.stroke} strokeOpacity={0.7}
+              strokeDasharray="4 3" strokeWidth={1.2}
+              label={{ value: `Min: ${refMin}`, fill: "#94a3b8", fontSize: 8, position: "right", offset: 5 }} />
           )}
 
           {refMax !== undefined && (
@@ -188,12 +203,15 @@ function MiniChart({ biomarker }: { biomarker: Biomarker }) {
   const zc = ZONE[status];
 
   return (
-    <div className="bg-card border rounded-xl px-3 pt-2.5 pb-3 flex flex-col gap-1.5">
+    <div className="glass-card border border-border/40 rounded-xl px-3 pt-2.5 pb-3 flex flex-col gap-1.5 isomorphic-lift">
       {/* top row: name + badge */}
       <div className="flex items-start justify-between gap-1">
         <div>
           <div className="text-xs font-semibold leading-tight">{biomarker.name}</div>
           <div className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{biomarker.description}</div>
+          <div className="text-[10px] text-muted-foreground font-medium mt-1">
+            Normal: {formatRefRange(biomarker.referenceRange)} <span className="opacity-70 text-[9px]">{biomarker.unit}</span>
+          </div>
         </div>
         <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 ${zc.badge}`}>
           {zc.label}
@@ -201,7 +219,7 @@ function MiniChart({ biomarker }: { biomarker: Biomarker }) {
       </div>
 
       {/* value + delta */}
-      <div className="flex items-baseline gap-2">
+      <div className="flex items-baseline gap-2 mt-0.5">
         <span className="text-base font-bold tabular-nums">
           {formatValue(latest)}
           <span className="text-[10px] font-normal text-muted-foreground ml-1">{biomarker.unit}</span>
@@ -217,44 +235,37 @@ function MiniChart({ biomarker }: { biomarker: Biomarker }) {
       </div>
 
       {/* chart */}
-      <ZoneAreaChart biomarker={biomarker} height={90} showXLabels={false} />
+      <ZoneAreaChart biomarker={biomarker} height={135} showXLabels={true} />
     </div>
   );
 }
 
 /* ─── group card ─────────────────────────────────────────────────────── */
 function GroupCard({
-  label, biomarkerList, index, cols,
-}: { label: string; biomarkerList: Biomarker[]; index: number; cols: number }) {
+  label, biomarkerList, index,
+}: { label: string; biomarkerList: Biomarker[]; index: number }) {
   const statuses = biomarkerList.map(b =>
     getRangeStatus(b.history[b.history.length - 1], b.referenceRange)
   );
   const numHigh = statuses.filter(s => s !== "normal").length;
-
-  const colClass: Record<number, string> = {
-    2: "grid-cols-2",
-    3: "grid-cols-3",
-    4: "grid-cols-4",
-    5: "grid-cols-5",
-  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.05, 0.4) }}
-      className="bg-muted/20 border rounded-2xl px-4 pt-3 pb-4 shadow-sm"
+      className="py-2 space-y-3"
     >
       {/* section header */}
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold">{label}</h3>
+      <div className="flex items-center justify-between px-1">
+        <h3 className="text-md font-bold text-foreground/90">{label}</h3>
         {numHigh > 0
-          ? <span className="text-[10px] font-medium text-amber-500">{numHigh} out of range</span>
-          : <span className="text-[10px] font-medium text-green-500">All in range</span>
+          ? <span className="text-xs font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">{numHigh} out of range</span>
+          : <span className="text-xs font-bold text-green-500 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-full">All in range</span>
         }
       </div>
 
-      <div className={`grid gap-3 ${colClass[Math.min(cols, biomarkerList.length)] ?? "grid-cols-3"}`}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {biomarkerList.map(b => <MiniChart key={b.id} biomarker={b} />)}
       </div>
     </motion.div>
@@ -296,7 +307,7 @@ function InsightCard({ biomarker }: { biomarker: Biomarker }) {
   const sentimentCls = insight.sentiment === "good" ? "text-green-500" : insight.sentiment === "warn" ? "text-amber-500" : "text-muted-foreground";
 
   return (
-    <div className="flex flex-col gap-2.5 h-full bg-muted/30 rounded-xl border px-3 py-3">
+    <div className="flex flex-col gap-2.5 h-full bg-primary/5 dark:bg-primary/10 rounded-xl border border-border/40 px-3 py-3">
       <div className="flex items-center justify-between">
         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${zc.badge}`}>{zc.label}</span>
         <SentimentIcon className={`h-3.5 w-3.5 shrink-0 ${sentimentCls}`} />
@@ -336,12 +347,15 @@ function BiomarkerChart({ biomarker, index }: { biomarker: Biomarker; index: num
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.04, 0.5) }}
-      className="bg-card border rounded-xl px-4 pt-3 pb-4 shadow-sm"
+      className="glass-card border border-border/40 rounded-2xl px-4 pt-3 pb-4 shadow-md isomorphic-lift flex flex-col justify-between"
     >
-      <div className="flex justify-between items-center mb-2">
+      <div className="flex justify-between items-start mb-3">
         <div>
           <h3 className="font-semibold text-sm leading-tight">{biomarker.name}</h3>
           <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{biomarker.description}</p>
+          <div className="text-[10px] text-muted-foreground font-medium mt-1">
+            Normal Range: {formatRefRange(biomarker.referenceRange)} {biomarker.unit}
+          </div>
         </div>
         <div className="text-right shrink-0 ml-3">
           <div className="text-lg font-bold tabular-nums">
@@ -350,7 +364,7 @@ function BiomarkerChart({ biomarker, index }: { biomarker: Biomarker; index: num
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-[1fr_156px] gap-3">
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_156px] gap-3">
         <ZoneAreaChart biomarker={biomarker} height={140} showXLabels={true} />
         <InsightCard biomarker={biomarker} />
       </div>
@@ -379,10 +393,10 @@ export default function Trends() {
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
-            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            className={`whitespace-nowrap px-4 py-2.5 rounded-full text-xs font-semibold border transition-all ${
               activeCategory === cat.id
-                ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                ? "bg-primary text-primary-foreground border-primary/20 shadow-md shadow-primary/20 scale-[1.03]"
+                : "bg-white/40 dark:bg-black/10 text-foreground border-border/40 hover:bg-primary/10 hover:text-primary backdrop-blur-sm"
             }`}
           >
             {cat.label}
@@ -392,7 +406,7 @@ export default function Trends() {
 
       {activeCategory === "all" ? (
         /* Grouped view */
-        <div className="space-y-4">
+        <div className="space-y-6">
           {CLINICAL_GROUPS.map((group, gi) => {
             const list = group.ids.map(id => byId[id]).filter(Boolean);
             if (!list.length) return null;
@@ -402,18 +416,21 @@ export default function Trends() {
                 label={group.label}
                 biomarkerList={list}
                 index={gi}
-                cols={group.cols}
               />
             );
           })}
           {/* Ungrouped fallback */}
-          {biomarkers
-            .filter(b => !GROUPED_IDS.has(b.id))
-            .map((b, i) => <BiomarkerChart key={b.id} biomarker={b} index={i} />)}
+          {biomarkers.filter(b => !GROUPED_IDS.has(b.id)).length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {biomarkers
+                .filter(b => !GROUPED_IDS.has(b.id))
+                .map((b, i) => <BiomarkerChart key={b.id} biomarker={b} index={i} />)}
+            </div>
+          )}
         </div>
       ) : (
         /* Category detail view */
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {biomarkers
             .filter(b => b.category === activeCategory)
             .map((b, i) => <BiomarkerChart key={b.id} biomarker={b} index={i} />)}

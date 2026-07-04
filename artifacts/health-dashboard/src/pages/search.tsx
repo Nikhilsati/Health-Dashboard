@@ -32,14 +32,14 @@ export default function Search() {
           placeholder="Search for Cholesterol, HbA1c, Iron..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full bg-card border rounded-xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary shadow-sm text-lg"
+          className="w-full glass-input border border-border/40 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary shadow-md text-lg text-foreground/90 font-medium transition-all"
           autoFocus
         />
       </div>
 
       {query.trim() !== "" && (
         <div className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+          <h2 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
             {results.length} Results
           </h2>
           
@@ -52,14 +52,16 @@ export default function Search() {
                 key={b.id}
               >
                 <Link href={`/category/${b.category}`}>
-                  <div className="bg-card border rounded-xl p-5 hover:border-primary/50 transition-colors cursor-pointer flex justify-between items-center group shadow-sm">
+                  <div className="glass-card border border-border/40 rounded-2xl p-5 cursor-pointer flex justify-between items-center group shadow-md isomorphic-lift">
                     <div>
-                      <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">{b.name}</h3>
-                      <div className="text-sm text-muted-foreground capitalize mt-0.5">{b.category}</div>
+                      <h3 className="font-bold text-lg text-foreground/90 group-hover:text-primary transition-colors">{b.name}</h3>
+                      <div className="text-xs text-muted-foreground capitalize mt-0.5">{b.category}</div>
                     </div>
                     <div className="text-right">
-                      <div className="text-xl font-semibold">{formatValue(b.history[b.history.length - 1])} <span className="text-sm text-muted-foreground font-normal">{b.unit}</span></div>
-                      <div className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium mt-1 ${getStatusColor(b.status)}`}>
+                      <div className="text-xl font-bold text-foreground/90">{formatValue(b.history[b.history.length - 1])} <span className="text-xs text-muted-foreground font-normal">{b.unit}</span></div>
+                      <div className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border mt-1.5 ${
+                        b.status === "normal" ? "bg-green-500/10 text-green-500 border-green-500/20" : b.status === "critical" ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                      }`}>
                         {getStatusLabel(b.status)}
                       </div>
                     </div>
@@ -69,7 +71,7 @@ export default function Search() {
             ))}
             
             {results.length === 0 && (
-              <div className="p-8 text-center bg-card border rounded-xl text-muted-foreground">
+              <div className="p-8 text-center glass-card border border-border/40 rounded-2xl text-muted-foreground text-sm font-medium">
                 No biomarkers found matching "{query}"
               </div>
             )}

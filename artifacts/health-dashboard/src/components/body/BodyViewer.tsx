@@ -12,24 +12,24 @@ function getCategoryStatus(categoryId: string): Status {
 }
 
 const STATUS_COLOR: Record<Status, { dot: string; ring: string; glow: string }> = {
-  normal:     { dot: "#22c55e", ring: "#22c55e55", glow: "0 0 12px #22c55e99, 0 0 24px #22c55e44" },
-  borderline: { dot: "#f59e0b", ring: "#f59e0b55", glow: "0 0 12px #f59e0b99, 0 0 24px #f59e0b44" },
-  critical:   { dot: "#ef4444", ring: "#ef444455", glow: "0 0 12px #ef444499, 0 0 24px #ef444444" },
+  normal:     { dot: "#22c55e", ring: "#22c55e55", glow: "0 0 16px #22c55e, 0 0 32px #22c55e55" },
+  borderline: { dot: "#f59e0b", ring: "#f59e0b55", glow: "0 0 16px #f59e0b, 0 0 32px #f59e0b55" },
+  critical:   { dot: "#ef4444", ring: "#ef444455", glow: "0 0 16px #ef4444, 0 0 32px #ef444455" },
 };
 
 // Positions as % of the image container (left%, top%)
 // Calibrated to match the anatomy image organs
 const ORGANS = [
-  { id: "brain",      label: "Brain / Vitamins", cat: "vitamins",    x: 49.5, y: 7.2  },
-  { id: "hormones",   label: "Hormones",          cat: "hormones",    x: 52.5, y: 14.5 },
-  { id: "thyroid",    label: "Thyroid",            cat: "thyroid",     x: 49.5, y: 21.5 },
-  { id: "heart",      label: "Heart",              cat: "heart",       x: 42.0, y: 36.5 },
-  { id: "liver",      label: "Liver",              cat: "liver",       x: 58.0, y: 41.5 },
-  { id: "blood",      label: "Blood",              cat: "blood",       x: 49.5, y: 36.0 },
-  { id: "pancreas",   label: "Pancreas",           cat: "diabetes",    x: 44.5, y: 46.5 },
-  { id: "kidney-l",   label: "Left Kidney",        cat: "kidney",      x: 38.0, y: 50.5 },
-  { id: "kidney-r",   label: "Right Kidney",       cat: "kidney",      x: 61.0, y: 50.5 },
-  { id: "inflam",     label: "Inflammation",       cat: "inflammation",x: 54.0, y: 54.0 },
+  { id: "brain",      label: "Brain / Vitamins", cat: "vitamins",    x: 50.0, y: 5.5  },
+  { id: "hormones",   label: "Hormones",          cat: "hormones",    x: 50.0, y: 9.5  },
+  { id: "thyroid",    label: "Thyroid",            cat: "thyroid",     x: 50.0, y: 14.5 },
+  { id: "heart",      label: "Heart",              cat: "heart",       x: 51.5, y: 24.0 },
+  { id: "liver",      label: "Liver",              cat: "liver",       x: 44.0, y: 30.5 },
+  { id: "blood",      label: "Blood",              cat: "blood",       x: 50.0, y: 27.5 },
+  { id: "pancreas",   label: "Pancreas",           cat: "diabetes",    x: 50.0, y: 35.5 },
+  { id: "kidney-l",   label: "Left Kidney",        cat: "kidney",      x: 61.5, y: 39.0 },
+  { id: "kidney-r",   label: "Right Kidney",       cat: "kidney",      x: 38.5, y: 39.0 },
+  { id: "inflam",     label: "Inflammation",       cat: "inflammation",x: 50.0, y: 43.0 },
 ];
 
 interface HotspotProps {
@@ -44,8 +44,8 @@ interface HotspotProps {
 function Hotspot({ x, y, label, status, selected, onClick }: HotspotProps) {
   const [hovered, setHovered] = useState(false);
   const c = STATUS_COLOR[status];
-  const dotSize = selected ? 14 : hovered ? 12 : 10;
-  const ringSize = selected ? 32 : hovered ? 26 : 22;
+  const dotSize = selected ? 16 : hovered ? 14 : 12;
+  const ringSize = selected ? 38 : hovered ? 32 : 26;
 
   return (
     <div
@@ -72,7 +72,7 @@ function Hotspot({ x, y, label, status, selected, onClick }: HotspotProps) {
         transform: "translate(-50%, -50%)",
         background: c.ring,
         animation: "pulse-ring 2s ease-out infinite",
-        border: `1.5px solid ${c.dot}88`,
+        border: `1.5px solid ${c.dot}aa`,
       }} />
       {/* Second ring (larger, slower) */}
       {(selected || hovered) && (
@@ -84,17 +84,18 @@ function Hotspot({ x, y, label, status, selected, onClick }: HotspotProps) {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          border: `1px solid ${c.dot}44`,
+          border: `1px solid ${c.dot}55`,
           animation: "pulse-ring 2s ease-out infinite 0.5s",
         }} />
       )}
-      {/* Inner dot */}
+      {/* Inner dot with high-contrast white border */}
       <div style={{
         width: dotSize,
         height: dotSize,
         borderRadius: "50%",
         background: c.dot,
-        boxShadow: selected ? `${c.glow}, 0 0 4px ${c.dot}` : hovered ? `0 0 8px ${c.dot}aa` : `0 0 6px ${c.dot}66`,
+        border: "2px solid #ffffff",
+        boxShadow: selected ? `${c.glow}, 0 0 8px ${c.dot}` : hovered ? `0 0 12px ${c.dot}` : `0 0 8px ${c.dot}cc`,
         transition: "all 0.2s ease",
         position: "relative",
         zIndex: 2,
@@ -156,7 +157,7 @@ export function BodyViewer({ selectedCat, onSelect }: BodyViewerProps) {
       <div style={{
         position: "relative",
         height: "100%",
-        aspectRatio: "0.68 / 1",
+        aspectRatio: "0.5 / 1",
         maxHeight: "100%",
         maxWidth: "100%",
       }}>
