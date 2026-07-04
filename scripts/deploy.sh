@@ -9,7 +9,8 @@ echo "Deploying to GitHub Pages..."
 # Go to the build output directory
 cd artifacts/health-dashboard/dist/public
 
-# Initialize a temporary git repository
+# Initialize a temporary git repository cleanly
+rm -rf .git
 git init
 git add -A
 git commit -m "Deploy to GitHub Pages"
