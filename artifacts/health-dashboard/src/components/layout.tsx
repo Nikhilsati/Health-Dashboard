@@ -3,6 +3,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { Activity, Droplet, Heart, ShieldPlus, ActivitySquare, Pill, Flame, Fingerprint, History, Sparkles, Scale, Search, Menu, X, User, Pencil, Check, ScanLine } from "lucide-react";
 import { useState, useEffect } from "react";
 import { categories, profile as defaultProfile } from "@/data/healthData";
+import { CommandPalette } from "./command-palette";
 
 const iconMap: Record<string, React.ElementType> = {
   heart: Heart,
@@ -29,6 +30,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [profileData, setProfileData] = useState<ProfileData>(defaultProfile);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [editData, setEditData] = useState<ProfileData>(defaultProfile);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -94,7 +107,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <NavItem href="/trends" icon={ActivitySquare} label="Trends" active={location === "/trends"} />
             <NavItem href="/body" icon={ScanLine} label="Body Viewer" active={location === "/body"} />
             <NavItem href="/reports" icon={History} label="Reports" active={location === "/reports"} />
-            <NavItem href="/search" icon={Search} label="Search" active={location === "/search"} />
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-foreground/80 hover:bg-primary/10 hover:text-primary hover:translate-x-1 group text-left"
+            >
+              <div className="flex items-center gap-3">
+                <Search className="h-4 w-4" />
+                <span>Search</span>
+              </div>
+              <kbd className="hidden md:inline-flex h-5 select-none items-center gap-0.5 rounded border border-border/60 bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground group-hover:border-primary/30 group-hover:bg-primary/5 transition-colors">
+                <span className="text-[9px]">⌘</span>K
+              </kbd>
+            </button>
           </div>
         </div>
 
@@ -209,6 +233,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       )}
+      <CommandPalette isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </div>
   );
 }

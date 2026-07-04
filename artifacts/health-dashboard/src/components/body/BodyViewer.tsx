@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { biomarkers } from "@/data/healthData";
-import bodyImage from "@assets/image_1783110497483.png";
+import bodyImage from "@assets/image.png";
 
 type Status = "normal" | "borderline" | "critical";
 
@@ -12,24 +12,24 @@ function getCategoryStatus(categoryId: string): Status {
 }
 
 const STATUS_COLOR: Record<Status, { dot: string; ring: string; glow: string }> = {
-  normal:     { dot: "#22c55e", ring: "#22c55e55", glow: "0 0 16px #22c55e, 0 0 32px #22c55e55" },
+  normal: { dot: "#22c55e", ring: "#22c55e55", glow: "0 0 16px #22c55e, 0 0 32px #22c55e55" },
   borderline: { dot: "#f59e0b", ring: "#f59e0b55", glow: "0 0 16px #f59e0b, 0 0 32px #f59e0b55" },
-  critical:   { dot: "#ef4444", ring: "#ef444455", glow: "0 0 16px #ef4444, 0 0 32px #ef444455" },
+  critical: { dot: "#ef4444", ring: "#ef444455", glow: "0 0 16px #ef4444, 0 0 32px #ef444455" },
 };
 
 // Positions as % of the image container (left%, top%)
 // Calibrated to match the anatomy image organs
 const ORGANS = [
-  { id: "brain",      label: "Brain / Vitamins", cat: "vitamins",    x: 50.0, y: 5.5  },
-  { id: "hormones",   label: "Hormones",          cat: "hormones",    x: 50.0, y: 9.5  },
-  { id: "thyroid",    label: "Thyroid",            cat: "thyroid",     x: 50.0, y: 14.5 },
-  { id: "heart",      label: "Heart",              cat: "heart",       x: 51.5, y: 24.0 },
-  { id: "liver",      label: "Liver",              cat: "liver",       x: 44.0, y: 30.5 },
-  { id: "blood",      label: "Blood",              cat: "blood",       x: 50.0, y: 27.5 },
-  { id: "pancreas",   label: "Pancreas",           cat: "diabetes",    x: 50.0, y: 35.5 },
-  { id: "kidney-l",   label: "Left Kidney",        cat: "kidney",      x: 61.5, y: 39.0 },
-  { id: "kidney-r",   label: "Right Kidney",       cat: "kidney",      x: 38.5, y: 39.0 },
-  { id: "inflam",     label: "Inflammation",       cat: "inflammation",x: 50.0, y: 43.0 },
+  { id: "brain", label: "Brain / Vitamins", cat: "vitamins", x: 50.0, y: 5.5 },
+  { id: "hormones", label: "Hormones", cat: "hormones", x: 50.0, y: 9.5 },
+  { id: "thyroid", label: "Thyroid", cat: "thyroid", x: 50.0, y: 14.5 },
+  { id: "heart", label: "Heart", cat: "heart", x: 51.5, y: 24.0 },
+  { id: "liver", label: "Liver", cat: "liver", x: 44.0, y: 30.5 },
+  { id: "blood", label: "Blood", cat: "blood", x: 50.0, y: 27.5 },
+  { id: "pancreas", label: "Pancreas", cat: "diabetes", x: 50.0, y: 35.5 },
+  { id: "kidney-l", label: "Left Kidney", cat: "kidney", x: 61.5, y: 39.0 },
+  { id: "kidney-r", label: "Right Kidney", cat: "kidney", x: 38.5, y: 39.0 },
+  { id: "inflam", label: "Inflammation", cat: "inflammation", x: 50.0, y: 43.0 },
 ];
 
 interface HotspotProps {
@@ -137,7 +137,7 @@ export function BodyViewer({ selectedCat, onSelect }: BodyViewerProps) {
     <div style={{
       width: "100%",
       height: "100%",
-      background: "#080d1a",
+      background: "transparent",
       position: "relative",
       overflow: "hidden",
       display: "flex",
@@ -157,7 +157,7 @@ export function BodyViewer({ selectedCat, onSelect }: BodyViewerProps) {
       <div style={{
         position: "relative",
         height: "100%",
-        aspectRatio: "0.5 / 1",
+        aspectRatio: "1024 / 1536",
         maxHeight: "100%",
         maxWidth: "100%",
       }}>
@@ -171,6 +171,7 @@ export function BodyViewer({ selectedCat, onSelect }: BodyViewerProps) {
             objectFit: "contain",
             userSelect: "none",
             display: "block",
+            background: "transparent",
           }}
         />
 
