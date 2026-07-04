@@ -24,7 +24,7 @@ export const profile = {
   age: 27,
   healthScore: 78,
   height: 168,
-  weight: 74,
+  weight: 61,
 };
 
 export const reports: Report[] = [

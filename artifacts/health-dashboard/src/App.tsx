@@ -18,6 +18,7 @@ import BodyPage from "@/pages/body";
 import Copilot from "@/pages/copilot";
 import Missions from "@/pages/missions";
 import Tracking from "@/pages/tracking";
+import DietPage from "@/pages/diet";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ function Router() {
         <Route path="/copilot" component={Copilot} />
         <Route path="/missions" component={Missions} />
         <Route path="/tracking" component={Tracking} />
+        <Route path="/diet" component={DietPage} />
         <Route path="/trends" component={Trends} />
         <Route path="/category/:slug" component={Category} />
         <Route path="/reports" component={Reports} />

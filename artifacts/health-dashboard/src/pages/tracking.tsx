@@ -41,7 +41,7 @@ export default function Tracking() {
   const [step, setStep] = useState(1);
   const [exerciseDays, setExerciseDays] = useState(4);
   const [outsideMeals, setOutsideMeals] = useState(3);
-  const [weight, setWeight] = useState(74);
+  const [weight, setWeight] = useState(61);
   const [sleepHrs, setSleepHrs] = useState(7);
   const [checkinResult, setCheckinResult] = useState<string | null>(null);
 

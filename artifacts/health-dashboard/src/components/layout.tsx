@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { ThemeToggle } from "./theme-toggle";
-import { Activity, Droplet, Heart, ShieldPlus, ActivitySquare, Pill, Flame, Fingerprint, History, Sparkles, Scale, Search, Menu, X, User, Pencil, Check, ScanLine, MessageSquare, Target, CheckSquare } from "lucide-react";
+import { Activity, Droplet, Heart, ShieldPlus, ActivitySquare, Pill, Flame, Fingerprint, History, Sparkles, Scale, Search, Menu, X, User, Pencil, Check, ScanLine, MessageSquare, Target, CheckSquare, ChefHat } from "lucide-react";
 import { useState, useEffect } from "react";
 import { categories, profile as defaultProfile } from "@/data/healthData";
 import { CommandPalette } from "./command-palette";
@@ -109,6 +109,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <NavItem href="/copilot" icon={MessageSquare} label="Health Copilot" active={location === "/copilot"} />
             <NavItem href="/missions" icon={Target} label="Missions & Journeys" active={location === "/missions"} />
             <NavItem href="/tracking" icon={CheckSquare} label="Habits & Journal" active={location === "/tracking"} />
+            <NavItem href="/diet" icon={ChefHat} label="Diet & Nutrition" active={location === "/diet"} />
             <NavItem href="/trends" icon={ActivitySquare} label="Trends" active={location === "/trends"} />
             <NavItem href="/body" icon={ScanLine} label="Body Viewer" active={location === "/body"} />
             <NavItem href="/reports" icon={History} label="Reports" active={location === "/reports"} />
