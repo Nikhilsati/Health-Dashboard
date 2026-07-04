@@ -123,10 +123,10 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: -10 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-[#0d131f]/85 shadow-2xl backdrop-blur-md flex flex-col max-h-[60vh] z-10"
+            className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border/60 dark:border-white/10 bg-card/95 dark:bg-[#0c101d]/90 shadow-2xl backdrop-blur-md flex flex-col max-h-[60vh] z-10"
           >
             {/* Search Input Box */}
-            <div className="flex items-center gap-3 px-4 border-b border-white/5 py-3.5">
+            <div className="flex items-center gap-3 px-4 border-b border-border/40 dark:border-white/5 py-3.5">
               <Search className="h-5 w-5 text-muted-foreground shrink-0" />
               <input
                 ref={inputRef}
@@ -139,7 +139,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                 placeholder="Search metrics, reports, or pages..."
                 className="w-full bg-transparent text-foreground/90 outline-none border-none placeholder-muted-foreground text-sm"
               />
-              <span className="text-[10px] font-mono bg-white/5 border border-white/10 text-muted-foreground px-2 py-0.5 rounded uppercase">
+              <span className="text-[10px] font-mono bg-muted dark:bg-white/5 border border-border dark:border-white/10 text-muted-foreground px-2 py-0.5 rounded uppercase">
                 ESC
               </span>
             </div>
@@ -157,7 +157,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                       className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl cursor-pointer transition-all ${
                         isSelected
                           ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 translate-x-1"
-                          : "hover:bg-white/5 text-foreground/80"
+                          : "hover:bg-muted dark:hover:bg-white/5 text-foreground/80"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -184,7 +184,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
                       {isSelected && (
                         <div className="flex items-center gap-1.5 opacity-90">
-                          <span className="text-[9px] font-mono bg-black/20 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                          <span className="text-[9px] font-mono bg-primary-foreground/20 dark:bg-black/20 px-1.5 py-0.5 rounded flex items-center gap-0.5">
                             Enter
                             <CornerDownLeft className="h-2.5 w-2.5" />
                           </span>
@@ -202,7 +202,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             </div>
 
             {/* Footer hints */}
-            <div className="bg-black/20 border-t border-white/5 px-4 py-2 flex items-center justify-between text-[10px] text-muted-foreground font-medium">
+            <div className="bg-muted/50 dark:bg-black/25 border-t border-border/40 dark:border-white/5 px-4 py-2 flex items-center justify-between text-[10px] text-muted-foreground font-medium">
               <div className="flex items-center gap-3">
                 <span>↑↓ Navigate</span>
                 <span>Enter Select</span>

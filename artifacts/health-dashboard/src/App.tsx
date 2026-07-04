@@ -15,6 +15,9 @@ import Insights from "@/pages/insights";
 import Compare from "@/pages/compare";
 import Search from "@/pages/search";
 import BodyPage from "@/pages/body";
+import Copilot from "@/pages/copilot";
+import Missions from "@/pages/missions";
+import Tracking from "@/pages/tracking";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +26,9 @@ function Router() {
     <Layout>
       <Switch>
         <Route path="/" component={Dashboard} />
+        <Route path="/copilot" component={Copilot} />
+        <Route path="/missions" component={Missions} />
+        <Route path="/tracking" component={Tracking} />
         <Route path="/trends" component={Trends} />
         <Route path="/category/:slug" component={Category} />
         <Route path="/reports" component={Reports} />

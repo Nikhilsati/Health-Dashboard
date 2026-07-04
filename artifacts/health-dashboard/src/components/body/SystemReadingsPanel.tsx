@@ -111,6 +111,7 @@ const CATEGORY_INTELLIGENCE: Record<string, {
 
 // Lifestyle annotations mapped to historical reports
 const LIFESTYLE_EVENTS = [
+  { date: "2023-03-27", note: "Earliest Healthians report. High cholesterol and ALT/SGPT noted." },
   { date: "2024-06-23", note: "Baseline lab work. Initial evaluation." },
   { date: "2025-05-06", note: "Started regular cardio routine (Zone 2 running)." },
   { date: "2025-07-17", note: "Began Vitamin D supplementation & Strength coaching." },
